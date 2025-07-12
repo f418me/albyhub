@@ -5,7 +5,7 @@ services:
     env_file: .env
     volumes:
       - ./albyhub-data:/data
-    expose:             # nur intern – kein publiker Port nötig
+    expose:             # internal only - no public port needed
       - "8080"
     restart: unless-stopped
     networks:
