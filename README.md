@@ -19,6 +19,32 @@ This repository contains a minimal Docker Compose configuration for running [Alb
 4. Caddy will automatically obtain HTTPS certificates and forward traffic to the Alby Hub container.
 
 Application data is stored in the `albyhub-data` directory. Caddy stores its configuration and certificates in `caddy/data` and `caddy/config`.
+
+## Troubleshooting: Caddy Certificate Renewal Loop
+
+If Caddy gets stuck retrying certificate renewal, the logs usually show the real issue clearly:
+
+- An old certificate was removed because it expired.
+- Caddy then tries to renew using stale metadata.
+- The key file (for example `albyhub.f418.ch.key`) is missing.
+- Caddy remains in a retry loop.
+
+The fix is a clean reset of Caddy's certificate storage.
+
+Run this in `~/albyhub`:
+
+```bash
+sudo docker compose down
+sudo rm -rf caddy/data caddy/config
+sudo mkdir -p caddy/data caddy/config
+sudo docker compose up -d
+sudo docker compose logs -f caddy
+```
+
+You should then see log lines similar to `obtaining certificate` and `certificate obtained successfully`.
+
+Afterwards, verify that your domain is reachable via HTTPS and that Alby Hub loads correctly in the browser.
+
 ## Managing Services
 
 Start the containers in the background with:
@@ -57,4 +83,3 @@ docker compose logs -f
 - `docker-compose.yml` – defines the Alby Hub and Caddy services.
 - `caddy/Caddyfile` – Caddy configuration for the reverse proxy.
 - `.env-example` – environment variables example file.
-
